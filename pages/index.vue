@@ -109,18 +109,71 @@
            </div>
         </div>
         
-        <!-- Area for Post Suggestions (to be added) -->
-        <div v-if="postSuggestions">
-            <!-- Display generated suggestions here -->
+        <!-- Suggestions Loading/Error Display -->
+         <div v-if="isLoadingSuggestions" class="text-center py-6">
+           <p class="text-gray-600 flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Generating post suggestions via OpenAI...
+           </p>
+        </div>
+        <div v-if="suggestionsError && !isLoadingSuggestions" class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <p class="font-bold">Suggestion Error:</p>
+            <p>{{ suggestionsError }}</p>
         </div>
 
+        <!-- Area for Post Suggestions -->
+        <div v-if="postSuggestions && !isLoadingSuggestions" class="p-4 border border-gray-200 rounded space-y-4">
+           <h2 class="text-lg font-semibold mb-2">Generated Post Suggestions:</h2>
+           <div v-for="(suggestion, sub) in postSuggestions" :key="sub" class="p-3 bg-gray-50 rounded border border-gray-100">
+               <h3 class="font-medium mb-2">{{ sub }}</h3>
+               <!-- Check for error first -->
+               <div v-if="'error' in suggestion" class="text-red-600 text-sm">
+                   <strong>Error:</strong> {{ suggestion.error }}
+               </div>
+                <!-- Only show inputs/button if suggestion is not an error -->
+                <div v-else class="space-y-2 text-sm">
+                   <div>
+                       <label class="block font-medium text-gray-700">Title:</label>
+                       <textarea 
+                           :value="suggestion.title" 
+                           rows="2" 
+                           class="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                           @input="updateSuggestionTitle(sub as string, ($event.target as HTMLTextAreaElement).value)"
+                       ></textarea>
+                   </div>
+                   <div>
+                        <label class="block font-medium text-gray-700">Body:</label>
+                       <textarea 
+                           :value="suggestion.body" 
+                           rows="6" 
+                           class="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                           @input="updateSuggestionBody(sub as string, ($event.target as HTMLTextAreaElement).value)"
+                       ></textarea>
+                   </div>
+                    <button 
+                        @click="submitPost(sub as string)" 
+                        :disabled="isLoadingSubmission[sub as string]" 
+                        class="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded disabled:opacity-50 flex items-center"
+                    >
+                        <span v-if="!isLoadingSubmission[sub as string]">Submit Post</span>
+                         <span v-else>
+                            <svg class="animate-spin h-4 w-4 text-white mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                         </span>
+                    </button>
+                    <!-- Submission Status -->
+                    <div v-if="submissionStatus[sub as string]" :class="['mt-2 text-xs p-1 rounded', submissionStatus[sub as string]?.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                        {{ submissionStatus[sub as string]?.message }}
+                    </div>
+               </div>
+           </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
 // Interfaces
 interface AnalysisResultData {
@@ -157,6 +210,9 @@ const isLoadingSuggestions = ref(false)
 const postSuggestions = ref<Record<string, PostSuggestion | {error: string}> | null>(null) // Placeholder
 const suggestionsError = ref<string | null>(null) // Placeholder
 
+const isLoadingSubmission = reactive<Record<string, boolean>>({}) // Loading state per submission
+const submissionStatus = reactive<Record<string, { success?: boolean; message?: string }>>({}) // Status per submission
+
 // Methods
 const processArticle = async () => {
   if (!articleUrl.value) return;
@@ -167,6 +223,8 @@ const processArticle = async () => {
   analysisError.value = null
   postSuggestions.value = null // Clear suggestions
   suggestionsError.value = null // Clear suggestions error
+  Object.keys(isLoadingSubmission).forEach(key => delete isLoadingSubmission[key]);
+  Object.keys(submissionStatus).forEach(key => delete submissionStatus[key]);
 
   try {
     // Fetch combined analysis and rules
@@ -184,35 +242,81 @@ const processArticle = async () => {
   }
 }
 
-// Placeholder for generating suggestions
 const generatePostSuggestions = async () => {
     if (!analysisResult.value || !rulesData.value) return;
 
     isLoadingSuggestions.value = true;
     postSuggestions.value = null;
     suggestionsError.value = null;
+    Object.keys(isLoadingSubmission).forEach(key => delete isLoadingSubmission[key]); // Clear submission state
+    Object.keys(submissionStatus).forEach(key => delete submissionStatus[key]);
 
-    console.log("Data for suggestions:", {
+    console.log("Requesting suggestions with:", {
+        articleUrl: articleUrl.value,
         analysis: analysisResult.value,
         rules: rulesData.value
-        // We also need the original article text here!
-        // Need to pass articleUrl or fetched text to the backend
     });
 
-    // --- TODO: Implement API call to /api/generate-posts --- 
-    // Pass necessary data: article content/url, analysis, rules
-    // try {
-    //    const response = await $fetch('/api/generate-posts', { ... });
-    //    postSuggestions.value = response.suggestions;
-    // } catch (err) {
-    //    suggestionsError.value = ... 
-    // }
-
-    // Simulate loading for now
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    suggestionsError.value = "Suggestion generation not implemented yet.";
+    try {
+       const response = await $fetch<Record<string, PostSuggestion | { error: string }>>('/api/generate-posts', {
+           method: 'POST',
+           body: {
+               articleUrl: articleUrl.value,
+               analysis: analysisResult.value,
+               rules: rulesData.value
+           }
+       });
+       postSuggestions.value = response;
+    } catch (err: any) {
+       console.error('Error calling generate-posts API:', err);
+       suggestionsError.value = err.data?.message || err.message || 'Failed to generate suggestions.';
+    }
     
     isLoadingSuggestions.value = false;
+}
+
+// Allow editing suggestions in the textareas
+const updateSuggestionTitle = (subreddit: string, newTitle: string) => {
+    if (postSuggestions.value && postSuggestions.value[subreddit] && !('error' in postSuggestions.value[subreddit])) {
+        (postSuggestions.value[subreddit] as PostSuggestion).title = newTitle;
+    }
+}
+const updateSuggestionBody = (subreddit: string, newBody: string) => {
+    if (postSuggestions.value && postSuggestions.value[subreddit] && !('error' in postSuggestions.value[subreddit])) {
+        (postSuggestions.value[subreddit] as PostSuggestion).body = newBody;
+    }
+}
+
+// Placeholder for submitting the post
+const submitPost = async (subreddit: string) => {
+    if (!postSuggestions.value || !postSuggestions.value[subreddit] || 'error' in postSuggestions.value[subreddit]) return;
+
+    const suggestion = postSuggestions.value[subreddit] as PostSuggestion;
+    isLoadingSubmission[subreddit] = true;
+    submissionStatus[subreddit] = {}; // Clear previous status
+
+    console.log(`Submitting to ${subreddit}:`, suggestion);
+
+    // --- TODO: Implement API call to /api/submit-post --- 
+    // Pass necessary data: subreddit, title, body
+    // Use Reddit API (OAuth required - likely user context needed here!)
+    // try {
+    //    await $fetch('/api/submit-post', { method: 'POST', body: { subreddit, title: suggestion.title, body: suggestion.body } });
+    //    submissionStatus[subreddit] = { success: true, message: 'Posted successfully!' };
+    // } catch (err) {
+    //    submissionStatus[subreddit] = { success: false, message: err.data?.message || 'Failed to post.' };
+    // }
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+    // Simulate potential error
+    if (Math.random() < 0.2) {
+         submissionStatus[subreddit] = { success: false, message: 'Simulated API Error: Posting failed.' };
+    } else {
+         submissionStatus[subreddit] = { success: true, message: 'Simulated Success: Post submitted.' };
+    }
+
+    isLoadingSubmission[subreddit] = false;
 }
 
 </script> 
