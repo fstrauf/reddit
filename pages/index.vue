@@ -1,181 +1,232 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center py-12">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl">
-      <h1 class="text-2xl font-bold mb-6 text-center">Reddit Outreach Automator</h1>
-      
-      <!-- URL Input Form -->
-      <form @submit.prevent="processArticle" class="mb-8">
-        <div class="mb-4">
-          <label for="substack-url" class="block text-sm font-medium text-gray-700 mb-2">Substack Article URL</label>
-          <input
-            type="url"
-            id="substack-url"
-            v-model="articleUrl"
-            placeholder="https://your-substack.com/p/your-article"
-            required
-            :disabled="isLoadingAnalysis"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
-          />
+  <div class="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-lg">
+      <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Reddit Outreach Automator</h1>
+
+      <!-- Top Section: Input & Analysis -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- Left: URL Input -->
+        <div class="border border-gray-200 rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">1. Analyze Article</h2>
+          <form @submit.prevent="processArticle">
+            <div class="mb-4">
+              <label for="substack-url" class="block text-sm font-medium text-gray-700 mb-1">Substack Article URL</label>
+              <input
+                type="url"
+                id="substack-url"
+                v-model="articleUrl"
+                placeholder="https://your-substack.com/p/your-article"
+                required
+                :disabled="isLoadingAnalysis"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+              />
+            </div>
+            <button
+              type="submit"
+              :disabled="isLoadingAnalysis"
+              class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 flex items-center justify-center transition duration-150 ease-in-out"
+            >
+               <span v-if="!isLoadingAnalysis">Analyze Article, Rules & Best Times</span>
+              <span v-else class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                {{ loadingMessage }} 
+              </span>
+            </button>
+             <!-- Analysis Loading Text (Dynamic) -->
+             <div v-if="isLoadingAnalysis" class="text-center pt-4 text-sm text-gray-500">
+                 {{ loadingMessage }}
+             </div>
+             <!-- Analysis Error Display -->
+             <div v-if="analysisError && !isLoadingAnalysis" class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+                <p class="font-medium">Analysis Error:</p>
+                <p>{{ analysisError }}</p>
+             </div>
+             <!-- Analysis Time Warning Display -->
+              <div v-if="timesError && !isLoadingAnalysis" class="mt-4 p-3 bg-orange-50 border border-orange-200 text-orange-700 rounded text-sm">
+                <p class="font-medium">Time Analysis Warning:</p>
+                <p>{{ timesError }}</p> 
+             </div>
+          </form>
         </div>
-        <button
-          type="submit"
-          :disabled="isLoadingAnalysis"
-          class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 flex items-center justify-center"
-        >
-           <span v-if="!isLoadingAnalysis">Analyze Article</span>
-          <span v-else>
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            Analyzing...
-          </span>
-        </button>
-      </form>
 
-      <!-- Loading Indicator for Analysis -->
-       <div v-if="isLoadingAnalysis" class="text-center py-6">
-         <p class="text-gray-600 flex items-center justify-center">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            Analyzing article and fetching subreddit rules...
-         </p>
-       </div>
-
-      <!-- Analysis Error Display -->
-      <div v-if="analysisError && !isLoadingAnalysis" class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-        <p class="font-bold">Analysis Error:</p>
-        <p>{{ analysisError }}</p>
+        <!-- Right: Analysis Results -->
+        <div class="border border-gray-200 rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">Analysis Results</h2>
+           <div v-if="!analysisResult && !isLoadingAnalysis" class="text-sm text-gray-500 italic">
+              Analysis results (themes and keywords) will appear here after submitting a URL.
+           </div>
+           <div v-if="analysisResult" class="space-y-3">
+            <div v-if="analysisResult.themes?.length">
+                <h3 class="font-medium text-gray-600">Themes:</h3>
+                <ul class="list-disc list-inside ml-4 text-sm text-gray-700">
+                <li v-for="theme in analysisResult.themes" :key="`theme-${theme}`">{{ theme }}</li>
+                </ul>
+            </div>
+            <div v-if="analysisResult.keywords?.length">
+                <h3 class="font-medium text-gray-600">Keywords:</h3>
+                <ul class="list-disc list-inside ml-4 text-sm text-gray-700">
+                <li v-for="keyword in analysisResult.keywords" :key="`keyword-${keyword}`">{{ keyword }}</li>
+                </ul>
+            </div>
+           </div>
+        </div>
       </div>
 
-      <!-- Results Area -->
-      <div v-if="analysisResult && !isLoadingAnalysis" class="space-y-6">
-        <!-- Analysis Results -->
-        <div class="p-4 border border-gray-200 rounded">
-          <h2 class="text-lg font-semibold mb-2">Article Analysis:</h2>
-          <div v-if="analysisResult.themes?.length">
-            <h3 class="font-medium">Themes:</h3>
-            <ul class="list-disc list-inside ml-4 text-sm text-gray-700">
-              <li v-for="theme in analysisResult.themes" :key="`theme-${theme}`">{{ theme }}</li>
+       <!-- Middle Section: Combined Subreddits, Rules & Times -->
+      <div v-if="analysisResult && analysisResult.suggestedSubreddits?.length" class="mb-8 border border-gray-200 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">2. Suggested Subreddits, Rules & Best Times</h2>
+            
+            <!-- Loading/Error states for Times Analysis -->
+            <div v-if="isLoadingAnalysis && analysisResult && !bestTimesData && !timesError" class="text-sm text-gray-500 italic mb-4">
+                Analyzing best times...
+            </div>
+            <div v-if="timesError && !isLoadingAnalysis" class="p-3 bg-orange-50 border border-orange-200 text-orange-700 rounded text-sm mb-4">
+                <p class="font-medium">Time Analysis Warning:</p>
+                <p>{{ timesError }}</p> 
+            </div>
+            
+            <!-- Combined List -->
+            <ul class="space-y-4">
+              <li v-for="subreddit in analysisResult.suggestedSubreddits" :key="`sub-${subreddit}`" class="bg-gray-50 rounded border border-gray-100">
+                <details class="group">
+                    <summary class="p-3 cursor-pointer list-none flex justify-between items-center">
+                        <!-- Left side: Subreddit name and top time -->
+                        <div class="flex items-center gap-x-4">
+                           <span class="font-medium text-gray-800">{{ subreddit }}</span>
+                           <!-- Display Top Time Here -->
+                            <span v-if="bestTimesData && bestTimesData[subreddit]?.bestTimes?.length" class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                                Best: {{ formatTimeToLocal(bestTimesData[subreddit]!.bestTimes![0].day, bestTimesData[subreddit]!.bestTimes![0].hour) }}
+                            </span>
+                            <span v-else-if="bestTimesData && bestTimesData[subreddit] && !bestTimesData[subreddit].error" class="text-xs text-gray-400 italic">
+                                (No peak time found)
+                            </span>
+                            <!-- Add indicator if time analysis is still loading? Optional -->
+                        </div>
+                         <!-- Right side: Toggle text -->
+                        <div>
+                           <span class="text-xs text-gray-500 group-open:hidden">Show Details</span>
+                           <span class="text-xs text-gray-500 hidden group-open:inline">Hide Details</span>
+                        </div>
+                    </summary>
+                    <div class="border-t border-gray-200 p-4 space-y-4">
+                        <!-- Best Times (Inside Details) -->
+                        <div>
+                            <h4 class="font-semibold mb-1 text-sm text-gray-700">Best Posting Times (Your Timezone: {{ localTimeZone || 'Unknown' }})</h4>
+                            <p class="text-xs text-gray-500 mb-2">Based on average score of top ~{{ POST_LIMIT }} posts from the last month.</p> <!-- Explanation Added -->
+                             <div v-if="bestTimesData && bestTimesData[subreddit] && bestTimesData[subreddit].error" class="text-red-600 text-xs">
+                                Error: {{ bestTimesData[subreddit].error }}
+                            </div>
+                             <ul v-else-if="bestTimesData && bestTimesData[subreddit]?.bestTimes?.length" class="space-y-1 text-xs">
+                                 <li v-for="(slot, i) in bestTimesData[subreddit]?.bestTimes" :key="i">
+                                     {{ formatTimeToLocal(slot.day, slot.hour) }} 
+                                     <span class="text-gray-500">(Avg Score: {{ slot.avgScore.toFixed(0) }})</span>
+                                 </li>
+                             </ul>
+                             <p v-else-if="bestTimesData && bestTimesData[subreddit]" class="text-xs text-gray-500 italic">Not enough data/no peak times found.</p>
+                              <p v-else class="text-xs text-gray-400 italic">
+                                (Times loading or unavailable)
+                             </p>
+                        </div>
+                        <!-- Rules -->
+                        <div>
+                             <h4 class="font-semibold mb-1 text-sm text-gray-700">Rules:</h4>
+                             <div v-if="rulesData && rulesData[subreddit] && 'error' in rulesData[subreddit]" class="p-2 text-xs bg-red-100 border border-red-300 text-red-700 rounded">
+                                <p class="font-bold">Error fetching rules:</p>
+                                <p>{{ rulesData[subreddit].error }}</p>
+                             </div>
+                             <div v-else-if="rulesData && rulesData[subreddit]" class="text-xs space-y-1 text-gray-600">
+                                <ul v-if="(rulesData[subreddit] as SubredditRule[]).length > 0" class="list-decimal list-inside space-y-1">
+                                    <li v-for="(rule, index) in (rulesData[subreddit] as SubredditRule[])" :key="index">
+                                        <strong class="font-medium text-gray-700">{{ rule.short_name }}</strong>
+                                        <p v-if="rule.description" class="ml-4 text-gray-500">{{ rule.description }}</p>
+                                    </li>
+                                </ul>
+                                <p v-else class="text-gray-500 italic">No rules listed via API.</p>
+                            </div>
+                             <div v-else class="text-xs text-gray-400 italic">
+                                (Rules loading or unavailable)
+                             </div>
+                        </div>
+                    </div>
+                </details>
+              </li>
             </ul>
-          </div>
-          <div v-if="analysisResult.keywords?.length" class="mt-2">
-            <h3 class="font-medium">Keywords:</h3>
-            <ul class="list-disc list-inside ml-4 text-sm text-gray-700">
-              <li v-for="keyword in analysisResult.keywords" :key="`keyword-${keyword}`">{{ keyword }}</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Suggested Subreddits & Rules -->
-        <div v-if="analysisResult.suggestedSubreddits?.length" class="p-4 border border-gray-200 rounded">
-          <h2 class="text-lg font-semibold mb-2">Suggested Subreddits & Rules:</h2>
-          <ul class="space-y-4">
-            <li v-for="subreddit in analysisResult.suggestedSubreddits" :key="`sub-${subreddit}`" class="p-3 bg-gray-50 rounded border border-gray-100">
-              <div class="flex justify-between items-center mb-2">
-                <span class="font-medium">{{ subreddit }}</span>
-              </div>
-              
-              <!-- Rules Display Area -->
-               <div v-if="rulesData && rulesData[subreddit] && 'error' in rulesData[subreddit]" class="mt-2 p-2 text-xs bg-red-100 border border-red-300 text-red-700 rounded">
-                <p class="font-bold">Error fetching rules:</p>
-                <p>{{ rulesData[subreddit].error }}</p>
-              </div>
-              <div v-else-if="rulesData && rulesData[subreddit]" class="mt-2 text-xs space-y-1 text-gray-600">
-                  <h4 class="font-semibold">Rules:</h4>
-                  <ul v-if="(rulesData[subreddit] as SubredditRule[]).length > 0" class="list-decimal list-inside space-y-1">
-                      <li v-for="(rule, index) in (rulesData[subreddit] as SubredditRule[])" :key="index">
-                          <strong class="font-medium">{{ rule.short_name }}</strong>
-                          <p v-if="rule.description" class="ml-4 text-gray-500">{{ rule.description }}</p>
-                      </li>
-                  </ul>
-                  <p v-else class="text-gray-500 italic">No rules listed via API.</p>
-              </div>
-               <div v-else class="mt-2 text-xs text-gray-400 italic">
-                 (Rules could not be determined)
-              </div>
-            </li>
-          </ul>
           
-          <!-- Button to Generate Posts -->
-           <div class="mt-6 text-center">
-               <button 
+          <!-- Generate Suggestions Button -->
+           <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+                <button 
                   @click="generatePostSuggestions"
-                  :disabled="isLoadingSuggestions || !analysisResult || !rulesData" 
-                  class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 flex items-center justify-center mx-auto"
+                  :disabled="isLoadingSuggestions || !analysisResult || !rulesData || isLoadingAnalysis || !!analysisError || !!timesError"
+                  class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 flex items-center justify-center mx-auto transition duration-150 ease-in-out"
                 >
-                   <span v-if="!isLoadingSuggestions">Generate Post Suggestions</span>
-                   <span v-else>
+                   <span v-if="!isLoadingSuggestions">3. Generate Post Suggestions</span>
+                   <span v-else class="flex items-center">
                       <svg class="animate-spin h-5 w-5 text-white mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                       Generating...
                    </span>
                </button>
            </div>
-        </div>
-        
-        <!-- Suggestions Loading/Error Display -->
-         <div v-if="isLoadingSuggestions" class="text-center py-6">
-           <p class="text-gray-600 flex items-center justify-center">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-              Generating post suggestions via OpenAI...
-           </p>
-        </div>
-        <div v-if="suggestionsError && !isLoadingSuggestions" class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            <p class="font-bold">Suggestion Error:</p>
-            <p>{{ suggestionsError }}</p>
-        </div>
-
-        <!-- Area for Post Suggestions -->
-        <div v-if="postSuggestions && !isLoadingSuggestions" class="p-4 border border-gray-200 rounded space-y-4">
-           <h2 class="text-lg font-semibold mb-2">Generated Post Suggestions:</h2>
-           <div v-for="(suggestion, sub) in postSuggestions" :key="sub" class="p-3 bg-gray-50 rounded border border-gray-100">
-               <h3 class="font-medium mb-2">{{ sub }}</h3>
-               <!-- Check for error first -->
-               <div v-if="'error' in suggestion" class="text-red-600 text-sm">
-                   <strong>Error:</strong> {{ suggestion.error }}
-               </div>
-                <!-- Only show inputs/button if suggestion is not an error -->
-                <div v-else class="space-y-2 text-sm">
-                   <div>
-                       <label class="block font-medium text-gray-700">Title:</label>
-                       <textarea 
-                           :value="suggestion.title" 
-                           rows="2" 
-                           class="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                           @input="updateSuggestionTitle(sub as string, ($event.target as HTMLTextAreaElement).value)"
-                       ></textarea>
-                   </div>
-                   <div>
-                        <label class="block font-medium text-gray-700">Body:</label>
-                       <textarea 
-                           :value="suggestion.body" 
-                           rows="6" 
-                           class="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                           @input="updateSuggestionBody(sub as string, ($event.target as HTMLTextAreaElement).value)"
-                       ></textarea>
-                   </div>
-                    <button 
-                        @click="submitPost(sub as string)" 
-                        :disabled="isLoadingSubmission[sub as string]" 
-                        class="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded disabled:opacity-50 flex items-center"
-                    >
-                        <span v-if="!isLoadingSubmission[sub as string]">Submit Post</span>
-                         <span v-else>
-                            <svg class="animate-spin h-4 w-4 text-white mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                         </span>
-                    </button>
-                    <!-- Submission Status -->
-                    <div v-if="submissionStatus[sub as string]" :class="['mt-2 text-xs p-1 rounded', submissionStatus[sub as string]?.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
-                        {{ submissionStatus[sub as string]?.message }}
-                    </div>
-               </div>
-           </div>
-        </div>
       </div>
-    </div>
-  </div>
+      
+       <!-- Bottom Section: Generated Suggestions -->
+       <div v-if="!isLoadingAnalysis">
+           <!-- Suggestions Loading Indicator -->
+           <div v-if="isLoadingSuggestions" class="text-center py-6">
+             <p class="text-gray-600 flex items-center justify-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Generating post suggestions via OpenAI...
+             </p>
+          </div>
+          <!-- Suggestions Error Display -->
+          <div v-if="suggestionsError && !isLoadingSuggestions" class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+              <p class="font-bold">Suggestion Error:</p>
+              <p>{{ suggestionsError }}</p>
+          </div>
+          <!-- Suggestions Display Grid -->
+          <div v-if="postSuggestions && !isLoadingSuggestions" class="border border-gray-200 rounded-lg p-6">
+              <h2 class="text-xl font-semibold mb-4 text-gray-700">4. Generated Post Suggestions</h2>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                 <div v-for="(suggestion, sub) in postSuggestions" :key="sub" class="p-4 bg-gray-50 rounded border border-gray-100">
+                     <h3 class="font-semibold mb-2 text-lg text-gray-800">{{ sub }}</h3>
+                     <!-- Error Display for specific suggestion -->
+                     <div v-if="'error' in suggestion" class="text-red-600 text-sm">
+                         <strong>Error:</strong> {{ suggestion.error }}
+                     </div>
+                      <!-- Editable Title and Body -->
+                      <div v-else class="space-y-3">
+                         <div>
+                             <label class="block font-medium text-sm text-gray-700">Title:</label>
+                             <textarea 
+                                 :value="suggestion.title" 
+                                 rows="2" 
+                                 class="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                 @input="updateSuggestionTitle(sub as string, ($event.target as HTMLTextAreaElement).value)"
+                             ></textarea>
+                         </div>
+                         <div>
+                              <label class="block font-medium text-sm text-gray-700">Body:</label>
+                             <textarea 
+                                 :value="suggestion.body" 
+                                 rows="8" 
+                                 class="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                 @input="updateSuggestionBody(sub as string, ($event.target as HTMLTextAreaElement).value)"
+                             ></textarea>
+                         </div>
+                          <!-- Removed Submit Button -->
+                     </div>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+    </div> <!-- End Max Width Container -->
+  </div> <!-- End Outer Container -->
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
-// Interfaces
+// --- Interfaces --- 
 interface AnalysisResultData {
   themes: string[];
   keywords: string[];
@@ -184,61 +235,95 @@ interface AnalysisResultData {
 interface SubredditRule {
     short_name: string;
     description: string;
-    kind: string; // e.g., "all", "link", "comment"
-    // Add other potential fields if needed
+    kind: string; 
 }
-// Type for the rules part of the response (mapping sub name to rules or error)
 type RulesData = Record<string, SubredditRule[] | { error: string }>;
-// Type for the combined response from the analyze API
 interface CombinedAnalysisResponse {
     analysis: AnalysisResultData;
     rules: RulesData;
 }
-// Placeholder for post suggestions structure
 interface PostSuggestion {
     title: string;
     body: string;
 }
+type PostSuggestionsData = Record<string, PostSuggestion | { error: string }>;
 
-// Reactive State
+interface BestTimeSlot {
+    day: number; // 0-6
+    hour: number; // 0-23 UTC
+    avgScore: number;
+}
+type BestTimesData = Record<string, { bestTimes?: BestTimeSlot[]; error?: string }>;
+
+// --- Constants (for display) --- 
+// Match the value used in the API route for the explanation text
+const POST_LIMIT = 50; 
+
+// --- Reactive State --- 
 const articleUrl = ref('')
 const isLoadingAnalysis = ref(false)
 const analysisResult = ref<AnalysisResultData | null>(null)
-const rulesData = ref<RulesData | null>(null) // Store the whole rules dictionary
+const rulesData = ref<RulesData | null>(null) 
 const analysisError = ref<string | null>(null)
+
 const isLoadingSuggestions = ref(false)
-const postSuggestions = ref<Record<string, PostSuggestion | {error: string}> | null>(null) // Placeholder
-const suggestionsError = ref<string | null>(null) // Placeholder
+const postSuggestions = ref<PostSuggestionsData | null>(null)
+const suggestionsError = ref<string | null>(null)
 
-const isLoadingSubmission = reactive<Record<string, boolean>>({}) // Loading state per submission
-const submissionStatus = reactive<Record<string, { success?: boolean; message?: string }>>({}) // Status per submission
+const bestTimesData = ref<BestTimesData | null>(null)
+const timesError = ref<string | null>(null)
+const localTimeZone = ref<string>('')
 
-// Methods
+// --- Computed Loading Message ---
+const loadingMessage = computed(() => {
+    if (!isLoadingAnalysis.value) return ''
+    if (!analysisResult.value) {
+        return 'Fetching article, analyzing content, and retrieving rules...'
+    } else {
+        return 'Analyzing best posting times...'
+    }
+})
+
+// --- Lifecycle Hook --- 
+onMounted(() => {
+    // Detect user's timezone after component mounts (client-side only)
+    try {
+        localTimeZone.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (e) {
+        console.error("Could not detect timezone:", e);
+        localTimeZone.value = 'UTC'; // Fallback
+    }
+});
+
+// --- Methods --- 
 const processArticle = async () => {
-  if (!articleUrl.value) return;
-
-  isLoadingAnalysis.value = true
+   isLoadingAnalysis.value = true
   analysisResult.value = null
-  rulesData.value = null // Clear rules
+  rulesData.value = null 
   analysisError.value = null
-  postSuggestions.value = null // Clear suggestions
-  suggestionsError.value = null // Clear suggestions error
-  Object.keys(isLoadingSubmission).forEach(key => delete isLoadingSubmission[key]);
-  Object.keys(submissionStatus).forEach(key => delete submissionStatus[key]);
-
+  postSuggestions.value = null 
+  suggestionsError.value = null
+  bestTimesData.value = null 
+  timesError.value = null 
+  
   try {
-    // Fetch combined analysis and rules
     const response = await $fetch<CombinedAnalysisResponse>('/api/analyze-article', {
       method: 'POST',
       body: { url: articleUrl.value },
     })
     analysisResult.value = response.analysis
     rulesData.value = response.rules
+
+    // Step 2: Automatically analyze best times if analysis was successful
+    if (analysisResult.value?.suggestedSubreddits && analysisResult.value.suggestedSubreddits.length > 0) {
+        await findBestPostingTimes(); // Call the time analysis function
+    }
+
   } catch (err: any) {
-    console.error('Error calling analyze API:', err)
-    analysisError.value = err.data?.message || err.message || 'An unknown error occurred.'
+    console.error('Error during initial analysis/rule fetch:', err);
+    analysisError.value = err.data?.message || err.message || 'An unknown error occurred during analysis.';
   } finally {
-    isLoadingAnalysis.value = false
+    isLoadingAnalysis.value = false;
   }
 }
 
@@ -248,8 +333,6 @@ const generatePostSuggestions = async () => {
     isLoadingSuggestions.value = true;
     postSuggestions.value = null;
     suggestionsError.value = null;
-    Object.keys(isLoadingSubmission).forEach(key => delete isLoadingSubmission[key]); // Clear submission state
-    Object.keys(submissionStatus).forEach(key => delete submissionStatus[key]);
 
     console.log("Requesting suggestions with:", {
         articleUrl: articleUrl.value,
@@ -258,7 +341,7 @@ const generatePostSuggestions = async () => {
     });
 
     try {
-       const response = await $fetch<Record<string, PostSuggestion | { error: string }>>('/api/generate-posts', {
+       const response = await $fetch<PostSuggestionsData>('/api/generate-posts', {
            method: 'POST',
            body: {
                articleUrl: articleUrl.value,
@@ -275,6 +358,75 @@ const generatePostSuggestions = async () => {
     isLoadingSuggestions.value = false;
 }
 
+const findBestPostingTimes = async () => {
+    if (!analysisResult.value?.suggestedSubreddits) return;
+
+    timesError.value = null; // Reset specific error for this step
+
+    console.log("Requesting best times for:", analysisResult.value.suggestedSubreddits);
+
+    try {
+        const response = await $fetch<BestTimesData>('/api/best-posting-times', {
+            method: 'POST',
+            body: {
+                subreddits: analysisResult.value.suggestedSubreddits
+            }
+        });
+        bestTimesData.value = response;
+    } catch (err: any) {
+        console.error('Error calling best-posting-times API:', err);
+        // Set the specific time error, don't stop the main loading state
+        timesError.value = err.data?.message || err.message || 'Failed to analyze posting times.';
+    }
+}
+
+// Helper functions for formatting display
+const formatDay = (dayIndex: number): string => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[dayIndex] || 'Invalid Day';
+}
+const formatHour = (hourUTC: number): string => {
+    if (hourUTC < 0 || hourUTC > 23) return 'Invalid Hour';
+    const hour12 = hourUTC % 12 === 0 ? 12 : hourUTC % 12;
+    const ampm = hourUTC < 12 ? 'AM' : 'PM';
+    return `${hour12}${ampm} UTC`; 
+}
+
+// Updated function to format time to local timezone
+const formatTimeToLocal = (dayUTC: number, hourUTC: number): string => {
+    if (typeof dayUTC !== 'number' || typeof hourUTC !== 'number' || dayUTC < 0 || dayUTC > 6 || hourUTC < 0 || hourUTC > 23) {
+        return 'Invalid Time';
+    }
+    if (!localTimeZone.value) {
+        return `(Waiting for timezone...) ${formatDay(dayUTC)} ${hourUTC}:00 UTC`; // Fallback before timezone is detected
+    }
+
+    try {
+        // Create a reference date (e.g., start of this week in UTC)
+        const now = new Date();
+        const todayUtcDay = now.getUTCDay();
+        const diff = dayUTC - todayUtcDay;
+        const targetUtcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + diff, hourUTC, 0, 0));
+
+        // Format using Intl.DateTimeFormat for locale-aware output
+        const formatter = new Intl.DateTimeFormat(undefined, { // Use browser's default locale
+            timeZone: localTimeZone.value,
+            weekday: 'short', 
+            hour: 'numeric', 
+            // minute: 'numeric', // Optional: add minutes if needed
+            hour12: true, // Use AM/PM
+        });
+        
+        return formatter.format(targetUtcDate);
+    } catch (e) {
+        console.error("Error formatting date:", e);
+        // Fallback to UTC display on error
+        const hour12 = hourUTC % 12 === 0 ? 12 : hourUTC % 12;
+        const ampm = hourUTC < 12 ? 'AM' : 'PM';
+        return `${formatDay(dayUTC)} ${hour12}${ampm} UTC (Format Error)`;
+    }
+}
+
 // Allow editing suggestions in the textareas
 const updateSuggestionTitle = (subreddit: string, newTitle: string) => {
     if (postSuggestions.value && postSuggestions.value[subreddit] && !('error' in postSuggestions.value[subreddit])) {
@@ -287,36 +439,16 @@ const updateSuggestionBody = (subreddit: string, newBody: string) => {
     }
 }
 
-// Placeholder for submitting the post
-const submitPost = async (subreddit: string) => {
-    if (!postSuggestions.value || !postSuggestions.value[subreddit] || 'error' in postSuggestions.value[subreddit]) return;
+// Removed submitPost function
 
-    const suggestion = postSuggestions.value[subreddit] as PostSuggestion;
-    isLoadingSubmission[subreddit] = true;
-    submissionStatus[subreddit] = {}; // Clear previous status
+</script>
 
-    console.log(`Submitting to ${subreddit}:`, suggestion);
-
-    // --- TODO: Implement API call to /api/submit-post --- 
-    // Pass necessary data: subreddit, title, body
-    // Use Reddit API (OAuth required - likely user context needed here!)
-    // try {
-    //    await $fetch('/api/submit-post', { method: 'POST', body: { subreddit, title: suggestion.title, body: suggestion.body } });
-    //    submissionStatus[subreddit] = { success: true, message: 'Posted successfully!' };
-    // } catch (err) {
-    //    submissionStatus[subreddit] = { success: false, message: err.data?.message || 'Failed to post.' };
-    // }
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-    // Simulate potential error
-    if (Math.random() < 0.2) {
-         submissionStatus[subreddit] = { success: false, message: 'Simulated API Error: Posting failed.' };
-    } else {
-         submissionStatus[subreddit] = { success: true, message: 'Simulated Success: Post submitted.' };
-    }
-
-    isLoadingSubmission[subreddit] = false;
+<style>
+/* Add styles for the details/summary arrow if desired */
+summary::marker {
+  /* content: '' /* Or style the default marker */
+  /* display: none; /* If using custom indicator */
 }
-
-</script> 
+/* Example: Custom arrow indicator */
+/* summary::after { ... } */
+</style> 
