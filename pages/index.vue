@@ -1,103 +1,271 @@
 <template>
   <div class="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-lg">
-      <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Reddit Outreach Automator</h1>
+      <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Reddit Sentiment Analyzer</h1>
+      <p class="text-center text-gray-600 mb-8">Discover business opportunities by analyzing sentiment and common problems in Reddit communities</p>
 
-      <!-- Top Section: Input & Analysis -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <!-- Left: URL Input -->
+      <!-- Subreddit Analysis Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Left: Subreddit Input -->
         <div class="border border-gray-200 rounded-lg p-6">
-          <h2 class="text-xl font-semibold mb-4 text-gray-700">1. Analyze Article</h2>
-          <form @submit.prevent="processArticle">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">1. Analyze Subreddit</h2>
+          <form @submit.prevent="analyzeSubreddit">
             <div class="mb-4">
-              <label for="substack-url" class="block text-sm font-medium text-gray-700 mb-1">Substack Article URL</label>
-              <input
-                type="url"
-                id="substack-url"
-                v-model="articleUrl"
-                placeholder="https://your-substack.com/p/your-article"
-                required
-                :disabled="isLoadingAnalysis"
+              <label for="subreddit-name" class="block text-sm font-medium text-gray-700 mb-1">Subreddit Name</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">r/</span>
+                <input
+                  type="text"
+                  id="subreddit-name"
+                  v-model="subredditName"
+                  placeholder="PersonalFinanceNZ"
+                  required
+                  :disabled="isAnalyzing"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                />
+              </div>
+            </div>
+            <div class="mb-4">
+              <label for="post-limit" class="block text-sm font-medium text-gray-700 mb-1">Number of Posts to Analyze</label>
+              <select
+                id="post-limit"
+                v-model="postLimit"
+                :disabled="isAnalyzing"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
-              />
+              >
+                <option value="25">25 posts</option>
+                <option value="50">50 posts</option>
+                <option value="100">100 posts</option>
+              </select>
             </div>
             <button
               type="submit"
-              :disabled="isLoadingAnalysis"
+              :disabled="isAnalyzing"
               class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 flex items-center justify-center transition duration-150 ease-in-out"
             >
-               <span v-if="!isLoadingAnalysis">Analyze Article, Rules & Best Times</span>
+              <span v-if="!isAnalyzing">Analyze Sentiment & Find Opportunities</span>
               <span v-else class="flex items-center">
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                {{ loadingMessage }} 
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ loadingMessage }}
               </span>
             </button>
-             <!-- Analysis Loading Text (Dynamic) -->
-             <div v-if="isLoadingAnalysis" class="text-center pt-4 text-sm text-gray-500">
-                 {{ loadingMessage }}
-             </div>
-             <!-- Analysis Error Display -->
-             <div v-if="analysisError && !isLoadingAnalysis" class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
-                <p class="font-medium">Analysis Error:</p>
-                <p>{{ analysisError }}</p>
-             </div>
-             <!-- Analysis Time Warning Display -->
-              <div v-if="timesError && !isLoadingAnalysis" class="mt-4 p-3 bg-orange-50 border border-orange-200 text-orange-700 rounded text-sm">
-                <p class="font-medium">Time Analysis Warning:</p>
-                <p>{{ timesError }}</p> 
-             </div>
+            
+            <!-- Analysis Loading Text -->
+            <div v-if="isAnalyzing" class="text-center pt-4 text-sm text-gray-500">
+              {{ loadingMessage }}
+            </div>
+            
+            <!-- Analysis Error Display -->
+            <div v-if="analysisError && !isAnalyzing" class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+              <p class="font-medium">Analysis Error:</p>
+              <p>{{ analysisError }}</p>
+            </div>
           </form>
         </div>
 
-        <!-- Right: Analysis Results -->
+        <!-- Right: Quick Stats -->
         <div class="border border-gray-200 rounded-lg p-6">
-          <h2 class="text-xl font-semibold mb-4 text-gray-700">Analysis Results</h2>
-           <div v-if="!analysisResult && !isLoadingAnalysis" class="text-sm text-gray-500 italic">
-              Analysis results (themes and keywords) will appear here after submitting a URL.
-           </div>
-           <div v-if="analysisResult" class="space-y-3">
-            <div v-if="analysisResult.themes?.length">
-                <h3 class="font-medium text-gray-600">Themes:</h3>
-                <ul class="list-disc list-inside ml-4 text-sm text-gray-700">
-                <li v-for="theme in analysisResult.themes" :key="`theme-${theme}`">{{ theme }}</li>
-                </ul>
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">Analysis Overview</h2>
+          <div v-if="!analysisResult && !isAnalyzing" class="text-sm text-gray-500 italic">
+            Analysis results will appear here after analyzing a subreddit.
+          </div>
+          <div v-if="analysisResult" class="space-y-4">
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <h3 class="font-medium text-blue-800 mb-2">Posts Analyzed</h3>
+              <p class="text-2xl font-bold text-blue-600">{{ analysisResult.totalPosts }}</p>
             </div>
-            <div v-if="analysisResult.keywords?.length">
-                <h3 class="font-medium text-gray-600">Keywords:</h3>
-                <ul class="list-disc list-inside ml-4 text-sm text-gray-700">
-                <li v-for="keyword in analysisResult.keywords" :key="`keyword-${keyword}`">{{ keyword }}</li>
-                </ul>
+            <div class="bg-green-50 p-4 rounded-lg">
+              <h3 class="font-medium text-green-800 mb-2">Business Opportunities Found</h3>
+              <p class="text-2xl font-bold text-green-600">{{ analysisResult.businessOpportunities?.length || 0 }}</p>
             </div>
-           </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+              <h3 class="font-medium text-purple-800 mb-2">Common Problems</h3>
+              <p class="text-2xl font-bold text-purple-600">{{ analysisResult.commonProblems?.length || 0 }}</p>
+            </div>
+            <div class="bg-orange-50 p-4 rounded-lg">
+              <h3 class="font-medium text-orange-800 mb-2">Average Sentiment</h3>
+              <p class="text-2xl font-bold text-orange-600">{{ analysisResult.averageSentiment || 'N/A' }}</p>
+            </div>
+          </div>
         </div>
       </div>
 
-       <!-- Middle Section: Combined Subreddits, Rules & Times -->
-      <div v-if="analysisResult && analysisResult.suggestedSubreddits?.length" class="mb-8 border border-gray-200 rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">2. Suggested Subreddits, Rules & Best Times</h2>
-            
-            <!-- Loading/Error states for Times Analysis -->
-            <div v-if="isLoadingAnalysis && analysisResult && !bestTimesData && !timesError" class="text-sm text-gray-500 italic mb-4">
-                Analyzing best times...
+      <!-- Results Section -->
+      <div v-if="analysisResult" class="space-y-8">
+        <!-- Business Opportunities -->
+        <div class="border border-gray-200 rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">💡 Business Opportunities</h2>
+          <div v-if="analysisResult.businessOpportunities?.length" class="space-y-4">
+            <div v-for="(opportunity, index) in analysisResult.businessOpportunities" :key="index" class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h3 class="font-semibold text-green-800 mb-2">{{ opportunity.title }}</h3>
+              <p class="text-green-700 mb-2">{{ opportunity.description }}</p>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span v-for="keyword in opportunity.keywords" :key="keyword" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  {{ keyword }}
+                </span>
+              </div>
+              <p class="text-sm text-green-600">
+                <strong>Frequency:</strong> {{ opportunity.frequency }} mentions
+                <span class="mx-2">•</span>
+                <strong>Potential Market Size:</strong> {{ opportunity.marketSize }}
+              </p>
             </div>
-            <div v-if="timesError && !isLoadingAnalysis" class="p-3 bg-orange-50 border border-orange-200 text-orange-700 rounded text-sm mb-4">
-                <p class="font-medium">Time Analysis Warning:</p>
-                <p>{{ timesError }}</p> 
+          </div>
+          <div v-else class="text-gray-500 italic">No business opportunities identified yet.</div>
+        </div>
+
+        <!-- Common Problems -->
+        <div class="border border-gray-200 rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">🚨 Common Problems</h2>
+          <div v-if="analysisResult.commonProblems?.length" class="space-y-4">
+            <div v-for="(problem, index) in analysisResult.commonProblems" :key="index" class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <h3 class="font-semibold text-red-800 mb-2">{{ problem.title }}</h3>
+              <p class="text-red-700 mb-2">{{ problem.description }}</p>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span v-for="keyword in problem.keywords" :key="keyword" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  {{ keyword }}
+                </span>
+              </div>
+              <p class="text-sm text-red-600">
+                <strong>Frequency:</strong> {{ problem.frequency }} mentions
+                <span class="mx-2">•</span>
+                <strong>Sentiment:</strong> {{ problem.sentiment }}
+              </p>
             </div>
-            
-            <!-- Combined List -->
-            <ul class="space-y-4">
-              <li v-for="subreddit in analysisResult.suggestedSubreddits" :key="`sub-${subreddit}`" class="bg-gray-50 rounded border border-gray-100">
-                <details class="group">
-                    <summary class="p-3 cursor-pointer list-none flex justify-between items-center">
-                        <!-- Left side: Subreddit name and top time -->
-                        <div class="flex items-center gap-x-4">
-                           <span class="font-medium text-gray-800">{{ subreddit }}</span>
-                           <!-- Display Top Time Here -->
-                            <span v-if="bestTimesData && bestTimesData[subreddit]?.bestTimes?.length" class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
-                                Best: {{ formatTimeToLocal(bestTimesData[subreddit]!.bestTimes![0].day, bestTimesData[subreddit]!.bestTimes![0].hour) }}
-                            </span>
-                            <span v-else-if="bestTimesData && bestTimesData[subreddit] && !bestTimesData[subreddit].error" class="text-xs text-gray-400 italic">
+          </div>
+          <div v-else class="text-gray-500 italic">No common problems identified yet.</div>
+        </div>
+
+        <!-- Trending Topics -->
+        <div class="border border-gray-200 rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">📈 Trending Topics</h2>
+          <div v-if="analysisResult.trendingTopics?.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="(topic, index) in analysisResult.trendingTopics" :key="index" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 class="font-semibold text-blue-800 mb-2">{{ topic.title }}</h3>
+              <div class="flex flex-wrap gap-1 mb-2">
+                <span v-for="keyword in topic.keywords" :key="keyword" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ keyword }}
+                </span>
+              </div>
+              <p class="text-sm text-blue-600">
+                <strong>Mentions:</strong> {{ topic.frequency }}
+                <span class="mx-2">•</span>
+                <strong>Sentiment:</strong> {{ topic.sentiment }}
+              </p>
+            </div>
+          </div>
+          <div v-else class="text-gray-500 italic">No trending topics identified yet.</div>
+        </div>
+
+        <!-- Sentiment Analysis -->
+        <div class="border border-gray-200 rounded-lg p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">📊 Sentiment Analysis</h2>
+          <div v-if="analysisResult.sentimentBreakdown" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <h3 class="font-semibold text-green-800 mb-2">Positive</h3>
+              <p class="text-3xl font-bold text-green-600">{{ analysisResult.sentimentBreakdown.positive }}%</p>
+            </div>
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+              <h3 class="font-semibold text-yellow-800 mb-2">Neutral</h3>
+              <p class="text-3xl font-bold text-yellow-600">{{ analysisResult.sentimentBreakdown.neutral }}%</p>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+              <h3 class="font-semibold text-red-800 mb-2">Negative</h3>
+              <p class="text-3xl font-bold text-red-600">{{ analysisResult.sentimentBreakdown.negative }}%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+interface BusinessOpportunity {
+  title: string;
+  description: string;
+  keywords: string[];
+  frequency: number;
+  marketSize: string;
+}
+
+interface CommonProblem {
+  title: string;
+  description: string;
+  keywords: string[];
+  frequency: number;
+  sentiment: string;
+}
+
+interface TrendingTopic {
+  title: string;
+  keywords: string[];
+  frequency: number;
+  sentiment: string;
+}
+
+interface SentimentBreakdown {
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
+interface AnalysisResult {
+  totalPosts: number;
+  businessOpportunities: BusinessOpportunity[];
+  commonProblems: CommonProblem[];
+  trendingTopics: TrendingTopic[];
+  sentimentBreakdown: SentimentBreakdown;
+  averageSentiment: string;
+}
+
+const subredditName = ref('PersonalFinanceNZ');
+const postLimit = ref('50');
+const isAnalyzing = ref(false);
+const loadingMessage = ref('');
+const analysisError = ref('');
+const analysisResult = ref<AnalysisResult | null>(null);
+
+const analyzeSubreddit = async () => {
+  if (!subredditName.value.trim()) {
+    analysisError.value = 'Please enter a subreddit name';
+    return;
+  }
+
+  isAnalyzing.value = true;
+  analysisError.value = '';
+  analysisResult.value = null;
+  
+  try {
+    loadingMessage.value = 'Fetching posts from Reddit...';
+    
+    const response = await $fetch('/api/analyze-subreddit', {
+      method: 'POST',
+      body: {
+        subreddit: subredditName.value.trim(),
+        limit: parseInt(postLimit.value)
+      }
+    });
+
+    analysisResult.value = response;
+    
+  } catch (error: any) {
+    console.error('Analysis error:', error);
+    analysisError.value = error.data?.message || error.message || 'Failed to analyze subreddit';
+  } finally {
+    isAnalyzing.value = false;
+    loadingMessage.value = '';
+  }
+};
+
+// Set page title
+useHead({
+  title: 'Reddit Sentiment Analyzer - Find Business Opportunities'
+});
+</script>
                                 (No peak time found)
                             </span>
                             <!-- Add indicator if time analysis is still loading? Optional -->
