@@ -1,0 +1,450 @@
+{
+    "nz_subreddits": {
+      "metadata": {
+        "total_active_subreddits": 50,
+        "combined_subscribers": 1400000,
+        "business_focused_communities": 8,
+        "regional_coverage": 15,
+        "last_updated": "2025-01-04"
+      },
+      "tiers": {
+        "tier_1_major": {
+          "description": "50K+ subscribers",
+          "subreddits": [
+            {
+              "name": "newzealand",
+              "subscribers": 799376,
+              "description": "Main NZ subreddit",
+              "category": "general",
+              "business_relevance": "high",
+              "url": "https://reddit.com/r/newzealand"
+            },
+            {
+              "name": "auckland",
+              "subscribers": 226252,
+              "description": "Auckland city discussions",
+              "category": "regional",
+              "business_relevance": "high",
+              "url": "https://reddit.com/r/auckland"
+            },
+            {
+              "name": "PersonalFinanceNZ",
+              "subscribers": 124031,
+              "description": "NZ personal finance",
+              "category": "finance",
+              "business_relevance": "very_high",
+              "url": "https://reddit.com/r/PersonalFinanceNZ"
+            },
+            {
+              "name": "wellington",
+              "subscribers": 122909,
+              "description": "Wellington city discussions",
+              "category": "regional",
+              "business_relevance": "high",
+              "url": "https://reddit.com/r/wellington"
+            }
+          ]
+        },
+        "tier_2_medium": {
+          "description": "10K-50K subscribers",
+          "subreddits": [
+            {
+              "name": "dunedin",
+              "subscribers": 35713,
+              "description": "Dunedin city discussions",
+              "category": "regional",
+              "business_relevance": "medium",
+              "url": "https://reddit.com/r/dunedin"
+            },
+            {
+              "name": "nzgardening",
+              "subscribers": 19017,
+              "description": "Gardening in New Zealand",
+              "category": "lifestyle",
+              "business_relevance": "low",
+              "url": "https://reddit.com/r/nzgardening"
+            },
+            {
+              "name": "tauranga",
+              "subscribers": 11860,
+              "description": "Tauranga city discussions",
+              "category": "regional",
+              "business_relevance": "medium",
+              "url": "https://reddit.com/r/tauranga",
+              "notes": "User's local market"
+            }
+          ]
+        }
+      },
+      "categories": {
+        "business_finance": [
+          {
+            "name": "PersonalFinanceNZ",
+            "subscribers": 124031,
+            "description": "Personal finance advice",
+            "business_relevance": "very_high",
+            "target_audience": "individuals_small_business",
+            "pain_points": ["expense_tracking", "investment_management", "banking_rates", "mortgage_advice"]
+          },
+          {
+            "name": "NZProperty",
+            "subscribers": 2347,
+            "description": "Property investment & real estate",
+            "business_relevance": "high",
+            "target_audience": "property_investors_managers",
+            "pain_points": ["property_management", "tenant_issues", "investment_analysis"]
+          },
+          {
+            "name": "NZInvesting",
+            "subscribers": 945,
+            "description": "Investment discussions",
+            "business_relevance": "medium",
+            "target_audience": "investors",
+            "pain_points": ["portfolio_management", "market_analysis"]
+          },
+          {
+            "name": "nzbusiness",
+            "subscribers": 476,
+            "description": "General business discussions",
+            "business_relevance": "very_high",
+            "target_audience": "business_owners",
+            "pain_points": ["hiring", "tax", "b2b_services"]
+          },
+          {
+            "name": "nzlaw",
+            "subscribers": 1053,
+            "description": "Legal discussions",
+            "business_relevance": "medium",
+            "target_audience": "legal_professionals_business",
+            "pain_points": ["compliance", "business_law"]
+          },
+          {
+            "name": "nzjobs",
+            "subscribers": 339,
+            "description": "Job postings & career advice",
+            "business_relevance": "medium",
+            "target_audience": "job_seekers_employers",
+            "pain_points": ["recruitment", "career_development"]
+          },
+          {
+            "name": "NZSmallBusiness",
+            "subscribers": 9,
+            "description": "Small business focus",
+            "business_relevance": "high",
+            "target_audience": "small_business_owners",
+            "pain_points": ["operations", "growth", "finance"]
+          },
+          {
+            "name": "NZAccounting",
+            "subscribers": 1,
+            "description": "Accounting discussions",
+            "business_relevance": "high",
+            "target_audience": "accountants_bookkeepers",
+            "pain_points": ["bookkeeping", "tax_compliance"]
+          }
+        ],
+        "regional_cities": [
+          {
+            "name": "auckland",
+            "subscribers": 226252,
+            "description": "Auckland city discussions",
+            "business_relevance": "high",
+            "economic_significance": "major_business_hub",
+            "population": 1700000
+          },
+          {
+            "name": "wellington",
+            "subscribers": 122909,
+            "description": "Wellington city discussions",
+            "business_relevance": "high",
+            "economic_significance": "government_corporate_center",
+            "population": 420000
+          },
+          {
+            "name": "dunedin",
+            "subscribers": 35713,
+            "description": "Dunedin city discussions",
+            "business_relevance": "medium",
+            "economic_significance": "university_town_tech_sector",
+            "population": 130000
+          },
+          {
+            "name": "tauranga",
+            "subscribers": 11860,
+            "description": "Tauranga city discussions",
+            "business_relevance": "medium",
+            "economic_significance": "growing_regional_center",
+            "population": 160000,
+            "notes": "User's local market advantage"
+          },
+          {
+            "name": "HamiltonNZ",
+            "subscribers": 811,
+            "description": "Hamilton and Waikato region",
+            "business_relevance": "low",
+            "economic_significance": "regional_center",
+            "population": 180000
+          },
+          {
+            "name": "newplymouth",
+            "subscribers": 2262,
+            "description": "New Plymouth discussions",
+            "business_relevance": "low",
+            "economic_significance": "regional_center",
+            "population": 87000
+          },
+          {
+            "name": "nelsonnz",
+            "subscribers": 2345,
+            "description": "Nelson discussions",
+            "business_relevance": "low",
+            "economic_significance": "regional_center",
+            "population": 52000
+          },
+          {
+            "name": "napier",
+            "subscribers": 1943,
+            "description": "Napier discussions",
+            "business_relevance": "low",
+            "economic_significance": "regional_center",
+            "population": 67000
+          },
+          {
+            "name": "rotorua",
+            "subscribers": 845,
+            "description": "Rotorua discussions",
+            "business_relevance": "low",
+            "economic_significance": "tourism_center",
+            "population": 58000
+          },
+          {
+            "name": "invercargill",
+            "subscribers": 1320,
+            "description": "Invercargill and Southland",
+            "business_relevance": "low",
+            "economic_significance": "regional_center",
+            "population": 51000
+          }
+        ],
+        "lifestyle_special_interest": [
+          {
+            "name": "nzgardening",
+            "subscribers": 19017,
+            "description": "Gardening in New Zealand",
+            "business_relevance": "low",
+            "category": "lifestyle"
+          },
+          {
+            "name": "nzgaming",
+            "subscribers": 1648,
+            "description": "Gaming in New Zealand",
+            "business_relevance": "low",
+            "category": "entertainment"
+          },
+          {
+            "name": "NZFood",
+            "subscribers": 1412,
+            "description": "NZ food related discussions",
+            "business_relevance": "low",
+            "category": "food_lifestyle"
+          },
+          {
+            "name": "NZmusic",
+            "subscribers": 1043,
+            "description": "New Zealand music",
+            "business_relevance": "low",
+            "category": "music"
+          },
+          {
+            "name": "NZOutdoors",
+            "subscribers": 1010,
+            "description": "Outdoor activities in NZ",
+            "business_relevance": "low",
+            "category": "outdoor_recreation"
+          },
+          {
+            "name": "NZFishing",
+            "subscribers": 378,
+            "description": "Fishing in New Zealand",
+            "business_relevance": "low",
+            "category": "outdoor_recreation"
+          },
+          {
+            "name": "nzfootball",
+            "subscribers": 458,
+            "description": "New Zealand football",
+            "business_relevance": "low",
+            "category": "sports"
+          },
+          {
+            "name": "nzrugby",
+            "subscribers": 109,
+            "description": "Rugby in New Zealand",
+            "business_relevance": "low",
+            "category": "sports"
+          }
+        ],
+        "professional_industry": [
+          {
+            "name": "nzlaw",
+            "subscribers": 1053,
+            "description": "Legal discussions",
+            "business_relevance": "medium",
+            "target_audience": "legal_professionals"
+          },
+          {
+            "name": "nzjobs",
+            "subscribers": 339,
+            "description": "Job postings and career advice",
+            "business_relevance": "medium",
+            "target_audience": "job_seekers_employers"
+          },
+          {
+            "name": "nzmusicians",
+            "subscribers": 181,
+            "description": "Musicians in New Zealand",
+            "business_relevance": "low",
+            "target_audience": "creative_professionals"
+          },
+          {
+            "name": "nzparents",
+            "subscribers": 350,
+            "description": "New Zealand parents",
+            "business_relevance": "low",
+            "target_audience": "parents"
+          }
+        ],
+        "politics_current_affairs": [
+          {
+            "name": "nzpolitics",
+            "subscribers": 6319,
+            "description": "NZ politics and current affairs",
+            "business_relevance": "low",
+            "category": "politics"
+          }
+        ]
+      },
+      "business_discovery_strategy": {
+        "primary_targets": [
+          {
+            "subreddit": "PersonalFinanceNZ",
+            "subscribers": 124031,
+            "priority": "very_high",
+            "reasons": ["financial_problems", "expense_tracking", "business_finance"],
+            "approach": "helper_strategy"
+          },
+          {
+            "subreddit": "newzealand",
+            "subscribers": 799376,
+            "priority": "high",
+            "reasons": ["massive_reach", "general_business_discussions", "market_validation"],
+            "approach": "community_building"
+          },
+          {
+            "subreddit": "auckland",
+            "subscribers": 226252,
+            "priority": "high",
+            "reasons": ["business_hub", "largest_city", "corporate_market"],
+            "approach": "b2b_focus"
+          },
+          {
+            "subreddit": "wellington",
+            "subscribers": 122909,
+            "priority": "high",
+            "reasons": ["government_sector", "corporate_center", "policy_influence"],
+            "approach": "enterprise_focus"
+          }
+        ],
+        "secondary_targets": [
+          {
+            "subreddit": "tauranga",
+            "subscribers": 11860,
+            "priority": "medium",
+            "reasons": ["local_market", "user_advantage", "relationship_building"],
+            "approach": "local_hero_strategy"
+          },
+          {
+            "subreddit": "nzbusiness",
+            "subscribers": 476,
+            "priority": "medium",
+            "reasons": ["direct_business_focus", "qualified_audience"],
+            "approach": "expert_positioning"
+          },
+          {
+            "subreddit": "NZProperty",
+            "subscribers": 2347,
+            "priority": "medium",
+            "reasons": ["property_management_problems", "recurring_pain_points"],
+            "approach": "solution_validation"
+          },
+          {
+            "subreddit": "dunedin",
+            "subscribers": 35713,
+            "priority": "medium",
+            "reasons": ["university_town", "tech_savvy", "innovation_culture"],
+            "approach": "early_adopter_focus"
+          }
+        ],
+        "niche_opportunities": [
+          {
+            "subreddit": "nzlaw",
+            "subscribers": 1053,
+            "priority": "low",
+            "reasons": ["legal_compliance", "business_law", "professional_services"],
+            "approach": "compliance_solutions"
+          },
+          {
+            "subreddit": "nzjobs",
+            "subscribers": 339,
+            "priority": "low",
+            "reasons": ["hr_problems", "recruitment_challenges"],
+            "approach": "workforce_solutions"
+          }
+        ]
+      },
+      "implementation_phases": {
+        "phase_1_credibility": {
+          "duration": "4-6 weeks",
+          "focus": "Build reputation",
+          "target_subreddits": ["PersonalFinanceNZ", "newzealand", "tauranga"],
+          "activities": ["answer_questions", "provide_value", "build_relationships"],
+          "success_metrics": ["10+ helpful answers per week", "positive karma", "community recognition"]
+        },
+        "phase_2_expansion": {
+          "duration": "4-6 weeks",
+          "focus": "Expand reach",
+          "target_subreddits": ["auckland", "wellington", "nzbusiness", "NZProperty"],
+          "activities": ["solution_validation", "market_research", "problem_identification"],
+          "success_metrics": ["validated_problems", "email_signups", "solution_interest"]
+        },
+        "phase_3_specialization": {
+          "duration": "ongoing",
+          "focus": "Niche targeting",
+          "target_subreddits": ["industry_specific", "regional_penetration"],
+          "activities": ["product_development", "customer_acquisition", "market_penetration"],
+          "success_metrics": ["paying_customers", "product_market_fit", "revenue_growth"]
+        }
+      },
+      "analysis_summary": {
+        "key_insights": [
+          "NZ Reddit heavily concentrated in few major subreddits",
+          "PersonalFinanceNZ is goldmine for financial solutions",
+          "Regional subreddits offer local market advantages",
+          "Many specialized NZ subreddits are inactive or tiny",
+          "Business problems span multiple communities"
+        ],
+        "market_opportunities": [
+          "Expense tracking and business finance (PersonalFinanceNZ)",
+          "Property management solutions (NZProperty)",
+          "Local business networking (regional subreddits)",
+          "Professional services automation (nzlaw, nzjobs)"
+        ],
+        "competitive_landscape": [
+          "Low awareness of Reddit for business discovery",
+          "Few businesses using helper strategy",
+          "Opportunity for first-mover advantage",
+          "Strong community focus enables relationship building"
+        ]
+      }
+    }
+  }
