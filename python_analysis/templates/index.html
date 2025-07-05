@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Harvester - Web UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        
+        .config-panel {
+            padding: 30px;
+            border-right: 1px solid #eee;
+        }
+        
+        .status-panel {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .subreddit-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .subreddit-input input {
+            flex: 1;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+        
+        .preset-groups {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .preset-btn {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+        
+        .preset-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+        
+        .preset-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .subreddit-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            min-height: 40px;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+        }
+        
+        .subreddit-tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .subreddit-tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .status-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .status-running {
+            border-left-color: #ffc107;
+        }
+        
+        .status-success {
+            border-left-color: #28a745;
+        }
+        
+        .status-error {
+            border-left-color: #dc3545;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .output-box {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 15px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #eee;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .mode-option {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mode-option:hover {
+            border-color: #667eea;
+        }
+        
+        .mode-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .mode-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .mode-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .config-panel {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Reddit Harvester</h1>
+            <p>Smart data collection with delta updates</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- Configuration Panel -->
+            <div class="config-panel">
+                <div class="section">
+                    <h3>🎯 Harvest Mode</h3>
+                    <div class="mode-grid" id="modeGrid">
+                        <div class="mode-option selected" data-mode="smart">
+                            <div class="mode-title">Smart</div>
+                            <div class="mode-desc">Auto delta (Recommended)</div>
+                        </div>
+                        <div class="mode-option" data-mode="delta">
+                            <div class="mode-title">Delta</div>
+                            <div class="mode-desc">Fast updates only</div>
+                        </div>
+                        <div class="mode-option" data-mode="full">
+                            <div class="mode-title">Full</div>
+                            <div class="mode-desc">Complete scan</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>📂 Subreddits</h3>
+                    <div class="form-group">
+                        <div class="subreddit-input">
+                            <input type="text" id="subredditInput" placeholder="Enter subreddit name (e.g., PersonalFinanceNZ)">
+                            <button class="btn btn-secondary btn-small" onclick="addSubreddit()">Add</button>
+                        </div>
+                    </div>
+                    
+                    <div class="subreddit-list" id="subredditList">
+                        <span style="color: #666; font-style: italic;">No subreddits selected</span>
+                    </div>
+                    
+                    <div class="preset-groups" id="presetGroups">
+                        <!-- Preset groups will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>⚙️ Options</h3>
+                    <div class="form-group">
+                        <label for="postsPerSub">Posts per Subreddit</label>
+                        <select id="postsPerSub">
+                            <option value="">Auto (Smart: 200 delta, 500 full)</option>
+                            <option value="50">50 - Quick test</option>
+                            <option value="100">100 - Light harvest</option>
+                            <option value="200">200 - Standard</option>
+                            <option value="500">500 - Heavy harvest</option>
+                            <option value="1000">1000 - Maximum</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="outputName">Output Name (optional)</label>
+                        <input type="text" id="outputName" placeholder="custom_harvest_name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="noDatabase"> JSON-only mode (no database)
+                        </label>
+                        <div class="alert alert-warning" style="margin-top: 5px; display: none;" id="noDatabaseWarning">
+                            ⚠️ JSON-only mode disables fast delta updates
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <button class="btn btn-primary" onclick="startHarvest()" id="startBtn" style="width: 100%; margin-bottom: 10px;">
+                        🚀 Start Harvest
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshStats()" style="width: 100%;">
+                        📊 Refresh Stats
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Status Panel -->
+            <div class="status-panel">
+                <div class="section">
+                    <h3>📊 Database Stats</h3>
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalPosts">-</div>
+                            <div class="stat-label">Posts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalComments">-</div>
+                            <div class="stat-label">Comments</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalSubreddits">-</div>
+                            <div class="stat-label">Subreddits</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>🔄 Harvest Status</h3>
+                    <div class="status-box" id="statusBox">
+                        <div id="statusText">Ready to harvest</div>
+                        <div class="progress-bar" id="progressBar" style="display: none;">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="output-box" id="outputBox" style="display: none;">
+                        <!-- Command output will appear here -->
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>🛠️ Tools</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-danger btn-small" onclick="showResetModal()">
+                            Reset Checkpoint
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="downloadData()">
+                            Download Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reset Modal -->
+    <div id="resetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; min-width: 300px;">
+            <h3>Reset Checkpoint</h3>
+            <p>Enter subreddit name to reset its harvest checkpoint:</p>
+            <input type="text" id="resetSubreddit" placeholder="e.g., PersonalFinanceNZ" style="width: 100%; margin: 10px 0;">
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-secondary btn-small" onclick="hideResetModal()" style="margin-right: 10px;">Cancel</button>
+                <button class="btn btn-danger btn-small" onclick="resetCheckpoint()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedSubreddits = [];
+        let selectedMode = 'smart';
+        let harvestRunning = false;
+        
+        // Load initial configuration
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPresetGroups();
+            refreshStats();
+            setupEventListeners();
+            startStatusPolling();
+        });
+        
+        function setupEventListeners() {
+            // Mode selection
+            document.querySelectorAll('.mode-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.mode-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedMode = this.dataset.mode;
+                });
+            });
+            
+            // Subreddit input
+            document.getElementById('subredditInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addSubreddit();
+                }
+            });
+            
+            // No database checkbox
+            document.getElementById('noDatabase').addEventListener('change', function() {
+                const warning = document.getElementById('noDatabaseWarning');
+                warning.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+        
+        async function loadPresetGroups() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                
+                const container = document.getElementById('presetGroups');
+                container.innerHTML = '';
+                
+                if (data.preset_groups && Object.keys(data.preset_groups).length > 0) {
+                    Object.entries(data.preset_groups).forEach(([groupName, subreddits]) => {
+                        const btn = document.createElement('div');
+                        btn.className = 'preset-btn';
+                        btn.innerHTML = `<strong>${groupName}</strong><br><small>${subreddits.length} subs</small>`;
+                        btn.onclick = () => selectPresetGroup(groupName, subreddits);
+                        container.appendChild(btn);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load preset groups:', error);
+            }
+        }
+        
+        function selectPresetGroup(groupName, subreddits) {
+            // Add all subreddits from the group
+            subreddits.forEach(sub => {
+                if (!selectedSubreddits.includes(sub)) {
+                    selectedSubreddits.push(sub);
+                }
+            });
+            updateSubredditDisplay();
+            
+            // Visual feedback
+            event.target.style.background = '#28a745';
+            event.target.style.color = 'white';
+            setTimeout(() => {
+                event.target.style.background = '';
+                event.target.style.color = '';
+            }, 1000);
+        }
+        
+        function addSubreddit() {
+            const input = document.getElementById('subredditInput');
+            const subreddit = input.value.trim();
+            
+            if (subreddit && !selectedSubreddits.includes(subreddit)) {
+                selectedSubreddits.push(subreddit);
+                updateSubredditDisplay();
+                input.value = '';
+            }
+        }
+        
+        function removeSubreddit(subreddit) {
+            selectedSubreddits = selectedSubreddits.filter(s => s !== subreddit);
+            updateSubredditDisplay();
+        }
+        
+        function updateSubredditDisplay() {
+            const container = document.getElementById('subredditList');
+            
+            if (selectedSubreddits.length === 0) {
+                container.innerHTML = '<span style="color: #666; font-style: italic;">No subreddits selected</span>';
+                return;
+            }
+            
+            container.innerHTML = selectedSubreddits.map(sub => 
+                `<div class="subreddit-tag">
+                    r/${sub}
+                    <span class="remove" onclick="removeSubreddit('${sub}')">&times;</span>
+                </div>`
+            ).join('');
+        }
+        
+        async function startHarvest() {
+            if (harvestRunning) return;
+            
+            if (selectedSubreddits.length === 0) {
+                alert('Please select at least one subreddit');
+                return;
+            }
+            
+            const params = {
+                subreddits: selectedSubreddits,
+                mode: selectedMode,
+                posts_per_sub: parseInt(document.getElementById('postsPerSub').value) || null,
+                no_database: document.getElementById('noDatabase').checked,
+                output_name: document.getElementById('outputName').value || null
+            };
+            
+            try {
+                const response = await fetch('/api/harvest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    harvestRunning = true;
+                    document.getElementById('startBtn').innerHTML = '⏳ Harvesting...';
+                    document.getElementById('startBtn').disabled = true;
+                    updateStatus('Harvest started...', 'running');
+                } else {
+                    alert('Failed to start harvest: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error starting harvest: ' + error.message);
+            }
+        }
+        
+        async function refreshStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (data.success && data.stats) {
+                    document.getElementById('totalPosts').textContent = data.stats.total_posts.toLocaleString();
+                    document.getElementById('totalComments').textContent = data.stats.total_comments.toLocaleString();
+                    document.getElementById('totalSubreddits').textContent = data.stats.total_subreddits;
+                } else {
+                    document.getElementById('totalPosts').textContent = '-';
+                    document.getElementById('totalComments').textContent = '-';
+                    document.getElementById('totalSubreddits').textContent = '-';
+                }
+            } catch (error) {
+                console.error('Failed to refresh stats:', error);
+            }
+        }
+        
+        function startStatusPolling() {
+            setInterval(async () => {
+                try {
+                    const response = await fetch('/api/status');
+                    const status = await response.json();
+                    
+                    if (status.running !== harvestRunning) {
+                        harvestRunning = status.running;
+                        
+                        if (!harvestRunning) {
+                            document.getElementById('startBtn').innerHTML = '🚀 Start Harvest';
+                            document.getElementById('startBtn').disabled = false;
+                            refreshStats(); // Refresh stats when harvest completes
+                        }
+                    }
+                    
+                    if (status.running) {
+                        updateStatus(status.progress, 'running');
+                    } else if (status.results) {
+                        if (status.results.success) {
+                            updateStatus('Harvest completed successfully!', 'success');
+                        } else {
+                            updateStatus('Harvest failed: ' + (status.error || 'Unknown error'), 'error');
+                        }
+                        
+                        // Show output
+                        const outputBox = document.getElementById('outputBox');
+                        outputBox.textContent = status.results.stdout || status.results.stderr || 'No output';
+                        outputBox.style.display = 'block';
+                    } else if (status.error) {
+                        updateStatus('Error: ' + status.error, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to poll status:', error);
+                }
+            }, 2000);
+        }
+        
+        function updateStatus(message, type) {
+            const statusBox = document.getElementById('statusBox');
+            const statusText = document.getElementById('statusText');
+            const progressBar = document.getElementById('progressBar');
+            
+            statusText.textContent = message;
+            
+            // Reset classes
+            statusBox.className = 'status-box';
+            
+            if (type === 'running') {
+                statusBox.classList.add('status-running');
+                progressBar.style.display = 'block';
+            } else if (type === 'success') {
+                statusBox.classList.add('status-success');
+                progressBar.style.display = 'none';
+            } else if (type === 'error') {
+                statusBox.classList.add('status-error');
+                progressBar.style.display = 'none';
+            }
+        }
+        
+        function showResetModal() {
+            document.getElementById('resetModal').style.display = 'block';
+        }
+        
+        function hideResetModal() {
+            document.getElementById('resetModal').style.display = 'none';
+            document.getElementById('resetSubreddit').value = '';
+        }
+        
+        async function resetCheckpoint() {
+            const subreddit = document.getElementById('resetSubreddit').value.trim();
+            
+            if (!subreddit) {
+                alert('Please enter a subreddit name');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/reset-checkpoint', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subreddit: subreddit })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    hideResetModal();
+                    refreshStats();
+                } else {
+                    alert('Failed to reset checkpoint: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error resetting checkpoint: ' + error.message);
+            }
+        }
+        
+        function downloadData() {
+            // This would need to be implemented to export data
+            alert('Data download feature coming soon!');
+        }
+    </script>
+</body>
+</html>

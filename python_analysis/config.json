@@ -62,5 +62,42 @@
       "min_subscriber_count": 1000,
       "warn_low_activity": true
     }
+  },
+  "delta": {
+    "enabled_subreddits": [
+      "PersonalFinanceNZ",
+      "newzealand", 
+      "auckland",
+      "wellington",
+      "entrepreneur",
+      "startups",
+      "programming",
+      "webdev",
+      "personalfinance"
+    ],
+    "full_harvest_subreddits": [
+      "AskReddit",
+      "unpopularopinion",
+      "mildlyinfuriating"
+    ],
+    "delta_max_posts": 100,
+    "full_max_posts": 500,
+    "delta_schedule": {
+      "high_frequency": {
+        "subreddits": ["PersonalFinanceNZ"],
+        "interval_hours": 2,
+        "max_posts": 50
+      },
+      "medium_frequency": {
+        "subreddits": ["newzealand", "auckland"],
+        "interval_hours": 6,
+        "max_posts": 100
+      },
+      "low_frequency": {
+        "subreddits": ["wellington", "personalfinance"],
+        "interval_hours": 24,
+        "max_posts": 200
+      }
+    }
   }
-} 
+}
