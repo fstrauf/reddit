@@ -5,9 +5,7 @@
 .nuxt
 .output
 
-# Python analysis output
-python_analysis/output/
-python_analysis/venv/
+# Python files (if any)
 *.pyc
 __pycache__/
 

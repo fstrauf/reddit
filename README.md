@@ -76,7 +76,28 @@ npm run dev
 yarn dev
 ```
 
+### macOS Users: Fixing "too many open files" Error
+
+If you encounter an `EMFILE: too many open files, watch` error on macOS, use the special development script that increases the file descriptor limit:
+
+```bash
+# pnpm
+pnpm dev:macos
+
+# npm
+npm run dev:macos
+
+# yarn
+yarn dev:macos
+```
+
+This script automatically increases the file descriptor limit to 10240 before starting the development server, which resolves the issue caused by macOS's default low limit.
+
+**Additional Fix**: The Nuxt configuration has been updated to exclude the `python_analysis/` directory from file watching, preventing the development server from monitoring thousands of Python package files in the virtual environment. This significantly reduces the number of file watchers needed.
+
 ## Usage
+
+### Basic Sentiment Analysis
 
 1. Enter a subreddit name (e.g., "PersonalFinanceNZ")
 2. Select the number of posts to analyze (25, 50, or 100)
@@ -86,6 +107,28 @@ yarn dev
    - **Common Problems**: Frequently mentioned issues and pain points
    - **Trending Topics**: Popular discussion themes
    - **Sentiment Analysis**: Overall mood breakdown of the community
+
+### Advanced Python Analysis
+
+The application also includes a more powerful Python-based analysis tool with additional features:
+
+1. Navigate to the "Python Analysis" page using the navigation bar
+2. Select the harvest mode:
+   - **Smart**: Auto delta mode (recommended for regular use)
+   - **Delta**: Fast updates only
+   - **Full**: Complete scan (slower but comprehensive)
+3. Add subreddits individually or select from preset groups
+4. Configure options like posts per subreddit and output name
+5. Click "Start Harvest" to begin the analysis
+6. Review the database stats, harvest status, and analysis results
+
+The Python Analysis tool offers:
+- **Cost Optimization**: Smart filtering reduces API costs
+- **Sentiment Analysis**: Finds higher quality problems through emotional analysis
+- **Temporal Patterns**: Analyzes when problems are posted for timing insights
+- **User Behavior**: Tracks who posts problems and repeat patterns
+- **Delta Harvesting**: Only fetch new content since last harvest (90-95% faster)
+- **Database Storage**: Persistent SQLite storage with full-text search
 
 ## Production
 

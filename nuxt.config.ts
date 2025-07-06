@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
-dotenv.config(); // Load .env file into process.env
+// Load environment variables from .env.local and .env files
+dotenv.config({ path: '.env.local' }); // Load .env.local first
+dotenv.config(); // Then load .env (if it exists)
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -7,7 +9,24 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxtjs/tailwindcss"],
   css: ["~/assets/css/tailwind.css"],
-  
+
+  // Vite configuration for file watching
+  vite: {
+    server: {
+      watch: {
+        ignored: [
+          'node_modules/**',
+          '.git/**',
+          '.nuxt/**',
+          'dist/**',
+          '.output/**',
+          '**/.DS_Store',
+          '**/Thumbs.db'
+        ]
+      }
+    }
+  },
+
   // App metadata
   app: {
     head: {
@@ -18,7 +37,7 @@ export default defineNuxtConfig({
       ]
     }
   },
-  
+
   runtimeConfig: {
     // Keys defined here are available server-side
     openaiApiKey: process.env.NUXT_OPENAI_API_KEY || process.env.OPENAI_API_KEY || '', // Explicitly read from process.env
